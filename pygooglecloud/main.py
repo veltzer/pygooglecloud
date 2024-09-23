@@ -3,9 +3,9 @@ The default group of operations that pygooglecloud has
 """
 import pylogconf.core
 from pytconf import register_endpoint, register_main, config_arg_parse_and_launch
+import google.auth
 
 from pygooglecloud.static import APP_NAME, DESCRIPTION, VERSION_STR
-import google.auth
 
 
 @register_endpoint(
