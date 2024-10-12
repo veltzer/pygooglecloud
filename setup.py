@@ -9,7 +9,7 @@ def get_readme():
 setuptools.setup(
     # the first three fields are a must according to the documentation
     name="pygooglecloud",
-    version="0.0.2",
+    version="0.0.3",
     packages=[
         "pygooglecloud",
     ],
