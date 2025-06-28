@@ -1,8 +1,8 @@
 """ python deps for this project """
 
-console_scripts: list[str] = [
-    "pygooglecloud=pygooglecloud.main:main",
-]
+scripts: dict[str,str] = {
+    "pygooglecloud": "pygooglecloud.main:main",
+}
 
 config_requires: list[str] = [
     "pyclassifiers",

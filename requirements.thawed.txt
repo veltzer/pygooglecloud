@@ -1,13 +1,12 @@
 # THIS IS AN AUTO-GENERATED FILE. DO NOT EDIT!
-pyclassifiers
-pylogconf
-pytconf
 google-auth
-pymakehelper
+mypy
+pyclassifiers
 pydmt
 pylint
+pylogconf
+pymakehelper
+pytconf
 pytest
 pytest-cov
-flake8
-mypy
 types-PyYAML
