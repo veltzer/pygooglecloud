@@ -13,8 +13,10 @@ install_requires: list[str] = [
     "google-auth",
 ]
 build_requires: list[str] = [
+    "hatch",
     "pydmt",
     "pymakehelper",
+    "pycmdtools",
 ]
 test_requires: list[str] = [
     "pylint",

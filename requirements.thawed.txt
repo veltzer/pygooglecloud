@@ -1,7 +1,9 @@
 # THIS IS AN AUTO-GENERATED FILE. DO NOT EDIT!
 google-auth
+hatch
 mypy
 pyclassifiers
+pycmdtools
 pydmt
 pylint
 pylogconf
