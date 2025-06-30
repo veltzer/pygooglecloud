@@ -59,7 +59,7 @@ pyasn1_modules==0.4.2
 pyclassifiers==0.0.20
 pycmdtools==0.0.85
 pycparser==2.22
-pydmt==0.3.24
+pydmt==0.3.26
 pyfakeuse==0.0.9
 Pygments==2.19.2
 pylint==3.3.7
