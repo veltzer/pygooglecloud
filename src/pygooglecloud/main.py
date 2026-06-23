@@ -114,6 +114,9 @@ def check_credentials() -> None:
       file means the key needs to be (re)placed.
     - user login: no GOOGLE_APPLICATION_CREDENTIALS; the gcloud Application
       Default Credentials file is used, refreshed via `gcloud auth ... login`.
+
+    On success this is silent (so it adds no noise to a shell startup hook);
+    only failures are reported, on stderr, with a non-zero exit.
     """
     sa_key = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
     if sa_key:
@@ -121,7 +124,6 @@ def check_credentials() -> None:
             _die(f"service-account key not found at {sa_key}.")
         if not _is_valid_json_file(sa_key):
             _die(f"service-account key at {sa_key} is not valid JSON.")
-        print("credentials OK")
         return
 
     adc_path = google.auth._cloud_sdk.get_application_default_credentials_path()
@@ -129,7 +131,6 @@ def check_credentials() -> None:
         _die(f"no Google credentials found. {_LOGIN_HINT}")
     if not _is_valid_json_file(adc_path):
         _die(f"Google credentials at {adc_path} are malformed. {_LOGIN_HINT}")
-    print("credentials OK")
 
 
 @register_main(
