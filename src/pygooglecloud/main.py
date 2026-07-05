@@ -54,7 +54,7 @@ def _read_project_from_configuration(name: str) -> str:
     a pure file read with no network call and no dependency on the gcloud CLI,
     which keeps invocation from a shell startup hook instant.
     """
-    config_dir = google.auth._cloud_sdk.get_config_path()
+    config_dir = google.auth._cloud_sdk.get_config_path()  # pylint: disable=protected-access
     config_file = os.path.join(config_dir, "configurations", f"config_{name}")
     if not os.path.isfile(config_file):
         _die(f"gcloud configuration '{name}' not found at {config_file}.")
@@ -126,7 +126,7 @@ def check_credentials() -> None:
             _die(f"service-account key at {sa_key} is not valid JSON.")
         return
 
-    adc_path = google.auth._cloud_sdk.get_application_default_credentials_path()
+    adc_path = google.auth._cloud_sdk.get_application_default_credentials_path()  # pylint: disable=protected-access
     if not os.path.isfile(adc_path):
         _die(f"no Google credentials found. {_LOGIN_HINT}")
     if not _is_valid_json_file(adc_path):
