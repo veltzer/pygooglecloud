@@ -6,9 +6,9 @@ import json
 import os
 import sys
 
-import pylogconf.core
-from pytconf import register_endpoint, register_main, config_arg_parse_and_launch
 import google.auth._cloud_sdk
+import pylogconf.core
+from pytconf import config_arg_parse_and_launch, register_endpoint, register_main
 
 from pygooglecloud.static import APP_NAME, DESCRIPTION, VERSION_STR
 
