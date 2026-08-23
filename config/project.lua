@@ -7,3 +7,4 @@ KEYWORDS = {
     "shell",
     "utilities",
 }
+PYPI = true
