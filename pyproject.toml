@@ -39,6 +39,14 @@ dependencies = [
     "google-auth",
 ]
 
+[dependency-groups]
+dev = [
+    "mypy",
+    "pylint",
+    "pytest",
+    "ruff",
+]
+
 [project.urls]
 "Homepage" = "https://github.com/veltzer/pygooglecloud"
 "Bug Tracker" = "https://github.com/veltzer/pygooglecloud/issues"
