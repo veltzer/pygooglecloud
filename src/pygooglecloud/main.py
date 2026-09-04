@@ -4,6 +4,7 @@ The default group of operations that pygooglecloud has
 import configparser
 import json
 import os
+import re
 import sys
 
 import google.auth._cloud_sdk
@@ -15,6 +16,8 @@ from pygooglecloud.static import APP_NAME, DESCRIPTION, VERSION_STR
 # Per-repo file (at the git root) naming the gcloud configuration to use.
 GCP_CONF_FILE = ".gcp.conf"
 GCP_CONF_KEY = "gcp_configuration_name"
+# a bash assignment: name=value, with no spaces around the equals sign
+_ASSIGNMENT = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=(.*)$")
 
 _LOGIN_HINT = "Run: gcloud auth application-default login"
 
@@ -29,19 +32,51 @@ def _die(message: str) -> None:
     raise SystemExit(1)
 
 
-def _read_configuration_name() -> str:
-    """Return the gcloud configuration name from ./.gcp.conf at the git root.
+def read_gcp_conf(text: str) -> dict[str, str]:
+    """Return the scalar key=value assignments of a .gcp.conf.
 
-    The file is a flat key=value file, e.g.:
-        gcp_configuration_name=machines
+    .gcp.conf is sourced by bash (the gcloud_*.sh scripts of utils-bash), so
+    besides plain `key=value` lines it holds comments, blank lines and bash
+    arrays such as:
+        gcp_run_args=(
+            --allow-unauthenticated
+        )
+    Only the scalar assignments matter here; arrays are skipped up to their
+    closing parenthesis, and a one-line array `key=(...)` is skipped too.
+    Values keep their surrounding quotes stripped but are not otherwise
+    expanded, so a value that references another variable comes back as
+    written.
     """
+    values: dict[str, str] = {}
+    in_array = False
+    for raw in text.splitlines():
+        line = raw.strip()
+        if in_array:
+            if line == ")":
+                in_array = False
+            continue
+        if not line or line.startswith("#"):
+            continue
+        match = _ASSIGNMENT.match(line)
+        if match is None:
+            continue
+        key, value = match.group(1), match.group(2).strip()
+        if value.startswith("("):
+            in_array = not value.endswith(")")
+            continue
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        values[key] = value
+    return values
+
+
+def _read_configuration_name() -> str:
+    """Return the gcloud configuration name from ./.gcp.conf at the git root."""
     if not os.path.isfile(GCP_CONF_FILE):
         _die(f"no {GCP_CONF_FILE} found in the current directory (the git root).")
-    # configparser needs a section header; .gcp.conf has none, so synthesize one.
-    parser = configparser.ConfigParser()
     with open(GCP_CONF_FILE, encoding="utf-8") as stream:
-        parser.read_string("[gcp]\n" + stream.read())
-    name = parser["gcp"].get(GCP_CONF_KEY, "").strip()
+        values = read_gcp_conf(stream.read())
+    name = values.get(GCP_CONF_KEY, "")
     if not name:
         _die(f"{GCP_CONF_FILE} does not set {GCP_CONF_KEY}.")
     return name
