@@ -5,7 +5,7 @@
 
 description: pygooglecloud helps you with command line interaction with gcp
 
-project website: https://veltzer.github.io/pygooglecloud
+project website: <https://veltzer.github.io/pygooglecloud>
 
 author: Mark Veltzer
 
