@@ -7,7 +7,6 @@ import os
 import re
 import sys
 
-import google.auth._cloud_sdk
 import pylogconf.core
 from pytconf import config_arg_parse_and_launch, register_endpoint, register_main
 
@@ -20,6 +19,21 @@ GCP_CONF_KEY = "gcp_configuration_name"
 _ASSIGNMENT = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=(.*)$")
 
 _LOGIN_HINT = "Run: gcloud auth application-default login"
+
+
+def _gcloud_config_dir() -> str:
+    """Return the gcloud config directory, following gcloud's documented layout.
+
+    google-auth only offers this through a private module, so the (stable,
+    documented) rule is applied here: CLOUDSDK_CONFIG wins, otherwise
+    %APPDATA%/gcloud on Windows and ~/.config/gcloud elsewhere.
+    """
+    override = os.environ.get("CLOUDSDK_CONFIG")
+    if override:
+        return override
+    if os.name == "nt":
+        return os.path.join(os.environ.get("APPDATA", ""), "gcloud")
+    return os.path.join(os.path.expanduser("~"), ".config", "gcloud")
 
 
 def _die(message: str) -> None:
@@ -89,7 +103,7 @@ def _read_project_from_configuration(name: str) -> str:
     a pure file read with no network call and no dependency on the gcloud CLI,
     which keeps invocation from a shell startup hook instant.
     """
-    config_dir = google.auth._cloud_sdk.get_config_path()  # pylint: disable=protected-access
+    config_dir = _gcloud_config_dir()
     config_file = os.path.join(config_dir, "configurations", f"config_{name}")
     if not os.path.isfile(config_file):
         _die(f"gcloud configuration '{name}' not found at {config_file}.")
@@ -161,7 +175,7 @@ def check_credentials() -> None:
             _die(f"service-account key at {sa_key} is not valid JSON.")
         return
 
-    adc_path = google.auth._cloud_sdk.get_application_default_credentials_path()  # pylint: disable=protected-access
+    adc_path = os.path.join(_gcloud_config_dir(), "application_default_credentials.json")
     if not os.path.isfile(adc_path):
         _die(f"no Google credentials found. {_LOGIN_HINT}")
     if not _is_valid_json_file(adc_path):
