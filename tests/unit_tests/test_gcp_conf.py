@@ -7,10 +7,9 @@ values, values that reference other variables, and arrays.
 from pygooglecloud.main import read_gcp_conf
 
 SAMPLE = """
-gcp_configuration_name=myworld
+gcp_project=id-veltzer-myworld
 
 # Where and how the app is deployed.
-gcp_project=id-veltzer-myworld
 gcp_service="myworld"
 gcp_region='us-central1'
 gcp_service_account="${gcp_service}-app-sa@${gcp_project}.iam.gserviceaccount.com"
@@ -31,7 +30,6 @@ not an assignment
 
 def test_scalars_are_read() -> None:
     values = read_gcp_conf(SAMPLE)
-    assert values["gcp_configuration_name"] == "myworld"
     assert values["gcp_project"] == "id-veltzer-myworld"
     assert values["gcp_domain"] == "myworld.stream"
 
@@ -55,4 +53,4 @@ def test_arrays_are_skipped_whole() -> None:
 def test_junk_is_ignored() -> None:
     assert not read_gcp_conf("")
     assert not read_gcp_conf("# only a comment\n\n")
-    assert read_gcp_conf("gcp_configuration_name=x\n)\n") == {"gcp_configuration_name": "x"}
+    assert read_gcp_conf("gcp_project=x\n)\n") == {"gcp_project": "x"}

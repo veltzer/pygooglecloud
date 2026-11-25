@@ -1,7 +1,6 @@
 """
 The default group of operations that pygooglecloud has
 """
-import configparser
 import json
 import os
 import re
@@ -12,9 +11,10 @@ from pytconf import config_arg_parse_and_launch, register_endpoint, register_mai
 
 from pygooglecloud.static import APP_NAME, DESCRIPTION, VERSION_STR
 
-# Per-repo file (at the git root) naming the gcloud configuration to use.
+# Per-repo file (at the git root) naming the GCP project. The gcloud
+# configuration for a project is named after its project ID.
 GCP_CONF_FILE = ".gcp.conf"
-GCP_CONF_KEY = "gcp_configuration_name"
+GCP_CONF_KEY = "gcp_project"
 # a bash assignment: name=value, with no spaces around the equals sign
 _ASSIGNMENT = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=(.*)$")
 
@@ -84,34 +84,15 @@ def read_gcp_conf(text: str) -> dict[str, str]:
     return values
 
 
-def _read_configuration_name() -> str:
-    """Return the gcloud configuration name from ./.gcp.conf at the git root."""
+def _read_project() -> str:
+    """Return the GCP project ID from ./.gcp.conf at the git root."""
     if not os.path.isfile(GCP_CONF_FILE):
         _die(f"no {GCP_CONF_FILE} found in the current directory (the git root).")
     with open(GCP_CONF_FILE, encoding="utf-8") as stream:
         values = read_gcp_conf(stream.read())
-    name = values.get(GCP_CONF_KEY, "")
-    if not name:
-        _die(f"{GCP_CONF_FILE} does not set {GCP_CONF_KEY}.")
-    return name
-
-
-def _read_project_from_configuration(name: str) -> str:
-    """Return the [core] project from the gcloud configuration named `name`.
-
-    Reads the on-disk gcloud configuration file directly (an INI file). This is
-    a pure file read with no network call and no dependency on the gcloud CLI,
-    which keeps invocation from a shell startup hook instant.
-    """
-    config_dir = _gcloud_config_dir()
-    config_file = os.path.join(config_dir, "configurations", f"config_{name}")
-    if not os.path.isfile(config_file):
-        _die(f"gcloud configuration '{name}' not found at {config_file}.")
-    parser = configparser.ConfigParser()
-    parser.read(config_file, encoding="utf-8")
-    project = parser.get("core", "project", fallback="").strip()
+    project = values.get(GCP_CONF_KEY, "")
     if not project:
-        _die(f"gcloud configuration '{name}' has no project set.")
+        _die(f"{GCP_CONF_FILE} does not set {GCP_CONF_KEY}.")
     return project
 
 
@@ -123,14 +104,12 @@ def get_project_id() -> None:
     """
     Print the GCP project id for this repository.
 
-    The project is resolved purely from local files (no network, no ADC):
-    1. read ./.gcp.conf (at the git root) for the gcloud configuration name
-    2. read that gcloud configuration's [core] project
+    The project is read from gcp_project in ./.gcp.conf (at the git root), a
+    pure local file read with no network and no ADC.
 
     Failures are reported as short one-line messages, no traceback.
     """
-    name = _read_configuration_name()
-    print(_read_project_from_configuration(name))
+    print(_read_project())
 
 
 def _is_valid_json_file(path: str) -> bool:
